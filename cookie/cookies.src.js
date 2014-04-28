@@ -1,79 +1,6 @@
-var pixel = {
-    params: "?account_id=VIZVRM943&section=1&level=1",
-    pageStatusFlag: false,
-    checkMyReadyState: null,
-    parse: function () {
-        var baseURL = ("https:" == document.location.protocol ? "https://ssl" : "http://serv2") + ".vizury.com/analyze/analyze.php";
-        var pixelfirestatus = false;
-        var visit_count1Day = "daily_visit_count";
-        //var visits1dCount = 0, visits1d = pixel.getCookieValue(visit_count1Day);
 
-        try {
-            pixel.checkMyReadyState = setInterval(function () {
-                pixel.pageloadStatus();
-                if (pixel.pageStatusFlag == true) {
-                    var pixelfireflag = false;
+    pixel.setNDayCookie("v2y", 24, "2y", "v7d", 14, "7d", "v4h", 3, "4h", "v1m", 12, "1m");		//1 days.
 
-                    //pixel.setNDayCookie("v2y", 34, "2y", "v7d", 24, "7d");		//1 days.
-                    pixel.setNDayCookie("v2y", 24, "2y", "v7d", 14, "7d", "v4h", 3, "4h", "v1m", 12, "1m");		//1 days.
-                    //pixel.setNDayCookie("v2y", 18, "2y", "v7d", 10, "7d");		//1 days.
-                    pixelfireflag = true;
-
-                    if (pixelfireflag && (!(pixelfirestatus))) {
-                        var analyze = document.createElement("iframe");
-                        analyze.src = baseURL + pixel.params;
-                        analyze.scrolling = "no";
-                        analyze.width = 1;
-                        analyze.height = 1;
-                        analyze.marginheight = 0;
-                        analyze.marginwidth = 0;
-                        analyze.frameborder = 0;
-                        analyze.style.display = 'none';
-                        var node = document.getElementsByTagName("script")[0];
-                        node.parentNode.insertBefore(analyze, node);
-                        pixelfirestatus = true;
-                    }
-                }
-            }, 3000, "Javascript");
-        } catch (error) {
-            var analyze = document.createElement("iframe");
-            analyze.src = baseURL + pixel.params + "&param=999";
-            analyze.scrolling = "no";
-            analyze.width = 1;
-            analyze.height = 1;
-            analyze.marginheight = 0;
-            analyze.marginwidth = 0;
-            analyze.frameborder = 0;
-            analyze.style.display = 'none';
-            var node = document.getElementsByTagName("script")[0];
-            node.parentNode.insertBefore(analyze, node);
-        }
-    },
-    pageloadStatus: function () {
-        if (document.readyState === "interactive" || document.readyState === "complete") {
-            pixel.pageStatusFlag = true;
-            clearInterval(pixel.checkMyReadyState);
-        } else {
-            pixel.pageStatusFlag = false;
-        }
-    },
-    getCookieValue: function (key) {
-        var currentcookie = document.cookie;
-        if (currentcookie.length > 0) {
-            var firstidx = currentcookie.indexOf(key + "=");
-            if (firstidx != -1) {
-                firstidx = firstidx + key.length + 1;
-                var lastidx = currentcookie.indexOf(";", firstidx);
-                if (lastidx == -1) {
-                    lastidx = currentcookie.length;
-                }
-                if (unescape(currentcookie.substring(firstidx, lastidx)) !== undefined && unescape(currentcookie.substring(firstidx, lastidx)) != null) {
-                    return unescape(currentcookie.substring(firstidx, lastidx));
-                }
-            }
-        }
-        return "";
-    },
     setNDayCookie: function (cname1, cvalue1, cexpdays1) {
         var vcookie = "_vtc";
         var currTime = parseInt((new Date().getTime())/1000);
@@ -184,4 +111,3 @@ var pixel = {
         var tcookieVal = newCookieVal + oldnewCookieVal + ((expdate == null) ? "" : "; expires=" + expdate.toUTCString()) + "; path=/";
         document.cookie = vcookie + "=" + tcookieVal;
     }
-}
