@@ -1,113 +1,121 @@
+//Usage
+var cookieObj = '{"1hVisits":{"ckValue":32,"type":"h","ckExp":"1"}}';
+//var cookieObj = '{"1hVisits":{"ckValue":12,"type":"h","ckExp":"1"},"7dVisits":{"ckValue":10,"type":"d","ckExp":"7"},"2mVisits":{"ckValue":22,"type":"m","ckExp":"2"}}';
+//pixel.setNDayCookie("v2y", 34, "2y", "v7d", 24, "7d");		//1 days.
+pixel.setCookie(cookieObj);		//1 days.
+console.log("1hVisits: " + pixel.getCookie("1hVisits"));
 
-    pixel.setNDayCookie("v2y", 24, "2y", "v7d", 14, "7d", "v4h", 3, "4h", "v1m", 12, "1m");		//1 days.
+setCookie: function (json) {
+    var currTime = parseInt((new Date().getTime())/1000);
+    var cookieVal = "", newCookieVal = "", oldCookieVal = "";
+    var expdate = new Date();
+    var expTime = 0;
+    var jsonObj = JSON.parse(json);
+    var vcookie = "_vtc";
+    var i = 0, cookieValLen = 0;
+    var jsonCookieVal = pixel.getCookie();
 
-    setNDayCookie: function (cname1, cvalue1, cexpdays1) {
-        var vcookie = "_vtc";
-        var currTime = parseInt((new Date().getTime())/1000);
-        var cookieVal = pixel.getCookieValue("_vtc"), newCookieVal="";
-        var oldCookieVal=cookieVal;
-        var expdate = new Date();
-        var expTime = 0;
-        var res, pattern, tnum, tstr="", subcExist=false;
-        var oldnewCookieVal = "";
-        var xD = "undefined";
+    if(jsonCookieVal !== null && jsonCookieVal !== "") {
+        cookieVal = JSON.parse(jsonCookieVal);
+        cookieValLen = Object.keys(cookieVal).length;
+        }
 
-        for(var i = 0; i < arguments.length; i+=3) {
-            //Pattern to check whether current argument (cookie) already exist in the cookie
-            pattern=new RegExp(".*:"+arguments[i]+"=.*"+"\|^"+arguments[i]+"=.*");
-            subcExist = pattern.test(cookieVal);
-
-            if(subcExist) {
-                //If already exist then extract its expiry time
-                pattern=new RegExp(":?" + arguments[i] + "=" +"[a-zA-Z0-9]+" + "\\|" + "([0-9.]+)");
-                res = cookieVal.match(pattern);
-
-                if(typeof res !== xD && res !== null) {
-                    if(typeof res[1] !== xD && res[1] !== null)
-                        expTime = parseInt(res[1]);
-                    else if(typeof res[2] !== xD && res[2] !== null)
-                        expTime = parseInt(res[2]);
-                }
-
-                //If current argument already exist then remove it from oldCookie value as we are going to update this and append it to new cookie
-                pattern = new RegExp("(:?" + arguments[i] + "=" +"[a-zA-Z0-9]+" + "\\|" + "[0-9.]+)");
-                res = cookieVal.match(pattern);
-
-                if(typeof res !== xD && res !== null) {
-                    if(typeof res[1] !== xD && res[1] !== null)
-                        oldCookieVal = oldCookieVal.replace(res[1],"");
-                    else if(typeof res[2] !== xD && res[2] !== null)
-                        oldCookieVal = oldCookieVal.replace(res[2],"");
-                }
-            }
+    for(var cookie in jsonObj) {
+        i++;
+        if(cookieVal.hasOwnProperty(cookie)){
+            if(parseInt(cookieVal[cookie].ckExp) > currTime)
+                cookieVal[cookie].ckValue = jsonObj[cookie].ckValue;
             else {
-                //If cookie already doesn't exist then get its expiry time which can be in 1h,1d,1m,1y format and set it accordingly
-                tnum = parseInt(arguments[i+2].match(/\d+/g));
-                tstr = arguments[i+2].match(/\D/g);
-                if(typeof tnum === xD || tnum === null)
-                    tnum = 0;
-
-                if(typeof tstr === xD || tnum === null)
-                    tstr = "";
-
-                if(tstr == 'd') {
-                    expdate.setDate(expdate.getDate() + tnum);
+                cookieVal[cookie].ckValue = "";
+                cookieVal[cookie].ckExp = 0;
+            }
+            newCookieVal += cookie + "=" + cookieVal[cookie].ckValue + "|" + cookieVal[cookie].ckExp ;
+        }
+        else {
+            switch(jsonObj[cookie].type) {
+                case 'd':
+                    expdate.setDate(expdate.getDate() + jsonObj[cookie].ckExp);
                     expTime = expdate.getTime() / 1000;
-                }
-                else if(tstr == 'm') {
-                    expdate.setDate(expdate.getDate() + (tnum * 30));
+                    break;
+                case 'm':
+                    expdate.setDate(expdate.getDate() + (jsonObj[cookie].ckExp * 30));
                     expTime = expdate.getTime() / 1000;
-                }
-                else if(tstr == 'y') {
-                    expdate.setDate(expdate.getDate() + (tnum * 30 * 12));
+                    break;
+                case 'y':
+                    expdate.setDate(expdate.getDate() + (jsonObj[cookie].ckExp * 30 * 12));
                     expTime = expdate.getTime() / 1000;
-                }
-                else if(tstr == 'h') {
+                    break;
+                case "h":
                     expdate.setDate(expdate.getDate());
-                    expTime = (expdate.getTime() + (tnum * 60 * 60 * 1000)) / 1000;
-                }
-                else {
+                    expTime = (expdate.getTime() + (jsonObj[cookie].ckExp * 60 * 60 * 1000)) / 1000;
+                    break;
+                default:
                     expdate.setDate(expdate.getDate() + 30);
                     expTime = expdate.getTime() / 1000;
-                }
+            }
+            newCookieVal += cookie + "=" + jsonObj[cookie].ckValue + "|" + expTime;
+        }
+        if(i < Object.keys(jsonObj).length || ( Object.keys(jsonObj).length === 1 && cookieValLen > 0 ) )
+            newCookieVal += ":";
+    }
+    i = 0;
+    for(var cookie in cookieVal) {
+        i++;
+        if(!jsonObj.hasOwnProperty(cookie)) {
+            if(parseInt(cookieVal[cookie].ckExp) < currTime) {
+                cookieVal[cookie].ckValue = "";
+                cookieVal[cookie].ckExp = 0;
             }
 
-            //Check if the cookie is already expired
-            if(expTime > currTime) {
-                newCookieVal += arguments[i] + "=" + arguments[i+1] + "|" + parseInt(expTime);
-            }
-            else {
-                newCookieVal += arguments[i] + "=" + "" + "|" + 0;
-            }
-
-            if(i+3 < arguments.length)
+            newCookieVal += cookie + "=" + cookieVal[cookie].ckValue + "|" + cookieVal[cookie].ckExp;
+            if(i < cookieValLen)
                 newCookieVal += ":";
         }
+    }
 
-        //Check the remaining values in old cookie and update them if they are already expired.
-        if(oldCookieVal !== "") {
-            var charstr = oldCookieVal.match(/^(.)/);
-            if(typeof charstr !== xD && charstr !== null && typeof charstr[1] !== xD && charstr[1] !== null && charstr[1] != ":") {
-                var oldCookieSplit = oldCookieVal.split(/=|:|\|/);
-                for(i=1; i<oldCookieSplit.length; i+=3) {
-                    expTime = parseInt(oldCookieSplit[i+2]);
+    //Finally set the cookie with new, updated and non updated values
+    expdate.setDate(expdate.getDate() + 365);
+    var tcookieVal = newCookieVal + oldCookieVal + ((expdate == null) ? "" : "; expires=" + expdate.toUTCString()) + "; path=/";
+    document.cookie = vcookie + "=" + tcookieVal;
+},
 
-                    if(expTime > currTime) {
-                        oldnewCookieVal += oldCookieSplit[i] + "=" + oldCookieSplit[i+1] + "|" + parseInt(expTime);
+getCookie: function () {
+    var currentcookie = document.cookie;
+    var i, vCookie = "_vtc";
+    var jsonObj = "";
+    var currTime = parseInt((new Date().getTime())/1000);
+    if (currentcookie.length > 0) {
+        var firstidx = currentcookie.indexOf(vCookie + "=");
+        if (firstidx != -1) {
+            firstidx = firstidx + vCookie.length + 1;
+            var lastidx = currentcookie.indexOf(";", firstidx);
+            if (lastidx == -1) {
+                lastidx = currentcookie.length;
+            }
+            if (decodeURIComponent(currentcookie.substring(firstidx, lastidx)) !== undefined && decodeURIComponent(currentcookie.substring(firstidx, lastidx)) != null) {
+                var cVal = decodeURIComponent(currentcookie.substring(firstidx, lastidx));
+                var cValSplit = cVal.split(/=|:|\|/);
+                jsonObj += "{";
+                for(i=0; i<cValSplit.length; i+=3) {
+                    if(parseInt(cValSplit[i+2]) < currTime ) {
+                        cValSplit[i+1] = 0;
+                        cValSplit[i+2] = 0;
                     }
-                    else {
-                        oldnewCookieVal += oldCookieSplit[i] + "=" + "" + "|" + 0;
-                    }
-
-                    if(i+3 < oldCookieSplit.length)
-                        oldnewCookieVal += ":";
+                    //{"1dVisits":{"ckValue":12,"type":"d","ckExp":"1"}
+                    jsonObj +=  "\"" + cValSplit[i] + "\"" + ":" + "{" + "\"ckValue\":" + cValSplit[i+1] + ",\"ckExp\":" + cValSplit[i+2] + "}";
+                    if(i+3 < cValSplit.length)
+                        jsonObj += ",";
                 }
-                oldnewCookieVal = ":" + oldnewCookieVal;
+                jsonObj += "}";
+
+                if(arguments.length == 0)
+                    return jsonObj;
+                else {
+                    var cookieVal = JSON.parse(jsonObj);
+                    return cookieVal[arguments[0]].ckValue;
+                }
             }
         }
-
-        //Finally set the cookie with new, updated and non updated values
-        expdate.setDate(expdate.getDate() + 365);
-        var tcookieVal = newCookieVal + oldnewCookieVal + ((expdate == null) ? "" : "; expires=" + expdate.toUTCString()) + "; path=/";
-        document.cookie = vcookie + "=" + tcookieVal;
     }
+    return "";
+}
