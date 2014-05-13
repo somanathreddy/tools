@@ -34,20 +34,20 @@ setCookie: function (json) {
         else {
             switch(jsonObj[cookie].type) {
                 case 'd':
-                    expdate.setDate(expdate.getDate() + jsonObj[cookie].ckExp);
+                    expdate.setDate(expdate.getDate() + parseInt(jsonObj[cookie].ckExp));
                     expTime = expdate.getTime() / 1000;
                     break;
                 case 'm':
-                    expdate.setDate(expdate.getDate() + (jsonObj[cookie].ckExp * 30));
+                    expdate.setDate(expdate.getDate() + (parseInt(jsonObj[cookie].ckExp) * 30));
                     expTime = expdate.getTime() / 1000;
                     break;
                 case 'y':
-                    expdate.setDate(expdate.getDate() + (jsonObj[cookie].ckExp * 30 * 12));
+                    expdate.setDate(expdate.getDate() + (parseInt(jsonObj[cookie].ckExp) * 30 * 12));
                     expTime = expdate.getTime() / 1000;
                     break;
                 case "h":
                     expdate.setDate(expdate.getDate());
-                    expTime = (expdate.getTime() + (jsonObj[cookie].ckExp * 60 * 60 * 1000)) / 1000;
+                    expTime = (expdate.getTime() + (parseInt(jsonObj[cookie].ckExp) * 60 * 60 * 1000)) / 1000;
                     break;
                 default:
                     expdate.setDate(expdate.getDate() + 30);
