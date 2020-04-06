@@ -1,4 +1,5 @@
 //Usage
+var version = 1.1;
 var cookieObj = '{"1hVisits":{"ckValue":32,"type":"h","ckExp":"1"}}';
 //var cookieObj = '{"1hVisits":{"ckValue":12,"type":"h","ckExp":"1"},"7dVisits":{"ckValue":10,"type":"d","ckExp":"7"},"2mVisits":{"ckValue":22,"type":"m","ckExp":"2"}}';
 //pixel.setNDayCookie("v2y", 34, "2y", "v7d", 24, "7d");		//1 days.
